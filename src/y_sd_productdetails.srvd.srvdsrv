@@ -1,0 +1,4 @@
+@EndUserText.label: 'Product Details Service'
+define service Y_sd_productdetails {
+  expose YProductDetails as products;
+}
