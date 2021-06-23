@@ -17,10 +17,18 @@ CLASS ycl_utility DEFINITION
       RETURNING VALUE(ro_client) TYPE REF TO if_web_http_client
       RAISING   cx_static_check.
 
-    CLASS-METHODS http_get IMPORTING io_client      TYPE REF TO if_web_http_client
-                           RETURNING VALUE(ro_data) TYPE REF TO data.
+    CLASS-METHODS:
+      http_get IMPORTING io_client      TYPE REF TO if_web_http_client
+               RETURNING VALUE(ro_data) TYPE REF TO data
+               RAISING   ycx_rap_query_provider,
+      raise_exception IMPORTING im_attr1 TYPE scx_attrname
+                      RAISING   ycx_rap_query_provider.
   PROTECTED SECTION.
   PRIVATE SECTION.
+    CONSTANTS:
+
+       product_not_found TYPE scx_attrname VALUE 'Product Not Found'.
+
 ENDCLASS.
 
 
@@ -49,6 +57,9 @@ CLASS ycl_utility IMPLEMENTATION.
               assoc_arrays = abap_true
             CHANGING
               data         = ro_data.
+
+        ELSE.
+          raise_exception( product_not_found ).
         ENDIF.
       CATCH cx_web_message_error.
       CATCH  cx_web_http_client_error.
@@ -56,5 +67,15 @@ CLASS ycl_utility IMPLEMENTATION.
 
 
   ENDMETHOD.
+  METHOD raise_exception.
+    DATA: ls_textid LIKE if_t100_message=>t100key .
 
+    ls_textid-msgid = 'SY'.
+    ls_textid-msgno = '499'.
+    ls_textid-attr1 = im_attr1.
+
+    DATA(lo_exp) = NEW  ycx_rap_query_provider( textid = ls_textid ).
+    RAISE EXCEPTION lo_exp.
+
+  ENDMETHOD.
 ENDCLASS.

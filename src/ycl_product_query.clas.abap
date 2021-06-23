@@ -9,41 +9,12 @@ CLASS ycl_product_query DEFINITION
 *// Interface for Query
     INTERFACES  if_rap_query_provider .
 
-*// Static method Used for Read as well during the update of price
-    CLASS-METHODS get_product_price IMPORTING im_product_id    TYPE yproductdetails-id
-                                    EXPORTING ex_product_price TYPE yproductdetails-value
-                                              ex_currency_code TYPE yproductdetails-currencycode
-                                    RAISING   ycx_rap_query_provider.
-    CLASS-METHODS get_price_from_response IMPORTING io_data          TYPE REF TO data
-                                          EXPORTING ex_product_price TYPE yproductdetails-value
-                                                    ex_currency_code TYPE yproductdetails-currencycode.
-
   PRIVATE SECTION.
     CONSTANTS:
-      BEGIN OF no_data_requested,
-        msgid TYPE symsgid VALUE 'SY',
-        msgno TYPE symsgno VALUE '499',
-        attr1 TYPE scx_attrname VALUE 'Data Not requested',
-        attr2 TYPE scx_attrname VALUE '',
-        attr3 TYPE scx_attrname VALUE '',
-        attr4 TYPE scx_attrname VALUE '',
-      END OF no_data_requested,
-      BEGIN OF no_single_id,
-        msgid TYPE symsgid VALUE 'SY',
-        msgno TYPE symsgno VALUE '499',
-        attr1 TYPE scx_attrname VALUE 'Please provide unique Product ID',
-        attr2 TYPE scx_attrname VALUE '',
-        attr3 TYPE scx_attrname VALUE '',
-        attr4 TYPE scx_attrname VALUE '',
-      END OF no_single_id,
-      BEGIN OF product_not_found,
-        msgid TYPE symsgid VALUE 'SY',
-        msgno TYPE symsgno VALUE '499',
-        attr1 TYPE scx_attrname VALUE 'Product Not Found',
-        attr2 TYPE scx_attrname VALUE '',
-        attr3 TYPE scx_attrname VALUE '',
-        attr4 TYPE scx_attrname VALUE '',
-      END OF product_not_found.
+
+      no_data_requested TYPE scx_attrname VALUE 'Data Not requested',
+      no_single_id      TYPE scx_attrname VALUE 'Please provide unique Product ID'.
+
 
 
     METHODS :
@@ -52,7 +23,16 @@ CLASS ycl_product_query DEFINITION
                        EXPORTING ex_Product_name TYPE yproductdetails-name
                        RAISING   ycx_rap_query_provider,
       get_title_from_response IMPORTING io_data         TYPE REF TO data
-                              EXPORTING ex_Product_name TYPE yproductdetails-name.
+                              EXPORTING ex_Product_name TYPE yproductdetails-name,
+
+*// Static method Used for Read as well during the update of price
+      get_product_price IMPORTING im_product_id    TYPE yproductdetails-id
+                        EXPORTING ex_product_price TYPE yproductdetails-value
+                                  ex_currency_code TYPE yproductdetails-currencycode
+                        RAISING   ycx_rap_query_provider,
+      get_price_from_response IMPORTING io_data          TYPE REF TO data
+                              EXPORTING ex_product_price TYPE yproductdetails-value
+                                        ex_currency_code TYPE yproductdetails-currencycode.
 
 ENDCLASS.
 
@@ -87,8 +67,7 @@ CLASS ycl_product_query IMPLEMENTATION.
 
 *// Raise Exception if Query is not made with Unique Product ID
           IF is_key_filter  <> abap_true.
-            lo_exp = NEW #( textid =  no_single_id  ).
-            RAISE EXCEPTION lo_exp.
+            ycl_utility=>raise_exception( im_attr1 = no_single_id  ).
           ENDIF.
 
 *// Product ID
@@ -119,25 +98,28 @@ CLASS ycl_product_query IMPLEMENTATION.
           io_response->set_data( lt_product_details ).
           io_response->set_total_number_of_records( lines( lt_product_details ) ).
         CATCH cx_rap_query_filter_no_range INTO DATA(lx_no_sel_option).
-          lo_exp = NEW #( textid =  no_single_id previous = lx_no_sel_option ).
-          RAISE EXCEPTION lo_exp.
 
+          ycl_utility=>raise_exception( im_attr1 = no_single_id  ).
       ENDTRY.
     ELSE.
-      lo_exp = NEW #( textid =  no_data_requested ).
-      RAISE EXCEPTION lo_exp.
+      ycl_utility=>raise_exception( im_attr1 = no_data_requested  ).
+
+
     ENDIF.
 
 
   ENDMETHOD.
   METHOD get_product_name.
+
     DATA(lv_url) = ycl_utility=>c_target_url && im_product_id && ycl_utility=>c_target_param1 && ycl_utility=>c_target_param2.
-*    DATA(lo_client) = ycl_utility=>create_client( url = lv_url  ).
-*                      CATCH cx_static_check.
-*    DATA(lv_response) = ycl_utility=>http_get( io_client =  lo_client ).
+
     TRY.
-        get_title_from_response( EXPORTING io_data   = ycl_utility=>http_get( io_client =  ycl_utility=>create_client( url = lv_url  ) )
+        DATA(lv_response) = ycl_utility=>http_get( io_client =  ycl_utility=>create_client( url = lv_url  ) ).
+
+        get_title_from_response( EXPORTING io_data   =  lv_response
                                   IMPORTING ex_Product_name = ex_Product_name ).
+      CATCH ycx_rap_query_provider INTO DATA(lo_exp).
+        RAISE EXCEPTION lo_exp.
       CATCH cx_static_check.
     ENDTRY.
   ENDMETHOD.

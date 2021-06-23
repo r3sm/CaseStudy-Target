@@ -1,0 +1,5 @@
+CLASS ycl_bp_productdetails DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF yproductdetails.
+ENDCLASS.
+
+CLASS ycl_bp_productdetails IMPLEMENTATION.
+ENDCLASS.
