@@ -1,10 +1,17 @@
+"#autoformat
+
 CLASS lhc_products DEFINITION INHERITING FROM cl_abap_behavior_handler.
-    PUBLIC SECTION.
+  PUBLIC SECTION.
     CLASS-DATA:
-        lv_id TYPE yproductdetails-id,
-        lv_json TYPE string.
+      lv_id   TYPE yproductdetails-id,
+      lv_json TYPE string.
   PRIVATE SECTION.
 
+    TYPES:
+      lty_failed  TYPE TABLE FOR FAILED yproductdetails,
+      lty_success TYPE TABLE FOR REPORTED yproductdetails.
+
+*// Update Method
     METHODS update FOR MODIFY
       IMPORTING entities FOR UPDATE products.
 
@@ -16,25 +23,56 @@ ENDCLASS.
 CLASS lhc_products IMPLEMENTATION.
 
   METHOD update.
-    READ TABLE entities INTO data(ls_entity) INDEX 1.
-    if sy-subrc = 0.
-         ASSIGN COMPONENT 'VALUE' OF STRUCTURE ls_entity-%control  TO FIELD-SYMBOL(<lfs_value>).
-         if <lfs_value> is ASSIGNED and <lfs_value> =  cl_abap_behavior_handler=>flag_changed.
-            lv_json = '"productValue" : ' && ls_entity-value .
-         endif.
-         ASSIGN COMPONENT 'CURRENCYCODE' OF STRUCTURE ls_entity-%control TO FIELD-SYMBOL(<lfs_currencycode>).
-         if <lfs_currencycode> is ASSIGNED and <lfs_currencycode> = cl_abap_behavior_handler=>flag_changed.
-            lv_json = lv_json && ' , ' && '"currencyCode" : ' && '"' && ls_entity-currencyCode && '"'.
-         endif.
 
-        if lv_json is NOT INITIAL.
+    READ TABLE entities INTO DATA(ls_entity) INDEX 1.
+    IF sy-subrc = 0.
+
+      TRY.
+
+*/ Calling Product Name method to Validate the ID
+
+          ycl_product_query=>get_product_name(
+            EXPORTING
+              im_product_id =  ls_entity-id
+            IMPORTING
+             ex_Product_name = DATA(name) ).
+
+*// If id is found, continue to check the changes requested and
+*// create payload required for http PUT
+
+*// value
+          ASSIGN COMPONENT 'VALUE' OF STRUCTURE ls_entity-%control  TO FIELD-SYMBOL(<lfs_value>).
+          IF <lfs_value> IS ASSIGNED AND <lfs_value> =  cl_abap_behavior_handler=>flag_changed.
+            lv_json = '"productValue" : ' && ls_entity-value .
+          ENDIF.
+*// currencyCode
+          ASSIGN COMPONENT 'CURRENCYCODE' OF STRUCTURE ls_entity-%control TO FIELD-SYMBOL(<lfs_currencycode>).
+          IF <lfs_currencycode> IS ASSIGNED AND <lfs_currencycode> = cl_abap_behavior_handler=>flag_changed.
+            lv_json = lv_json && ' , ' && '"currencyCode" : ' && '"' && ls_entity-currencyCode && '"'.
+          ENDIF.
+          IF lv_json IS NOT INITIAL.
             lv_id = ls_entity-id.
             CONCATENATE '{'  lv_json '}' INTO lv_json SEPARATED BY space.
-        endif.
-    endif.
+          ENDIF.
+
+*// If id Not Found
+        CATCH ycx_rap_query_provider INTO DATA(lo_exp).
+
+*// Populate Error Messages
+          APPEND VALUE #( %cid = ls_entity-%cid_ref id = ls_entity-id
+                          %fail = VALUE #( cause = if_abap_behv=>cause-not_found ) )
+          TO failed-products.
+          APPEND VALUE #( %cid = ls_entity-%cid_ref id = ls_entity-id
+                          %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                        text     = lo_exp->get_longtext( ) ) )
+           TO reported-products.
+      ENDTRY.
+    ENDIF.
+
   ENDMETHOD.
 
   METHOD read.
+*// NO IMPLEMENTATION
   ENDMETHOD.
 
 ENDCLASS.
@@ -57,39 +95,45 @@ ENDCLASS.
 CLASS lsc_YPRODUCTDETAILS IMPLEMENTATION.
 
   METHOD finalize.
+*// NO IMPLEMENTATION
   ENDMETHOD.
 
   METHOD check_before_save.
+*// NO IMPLEMENTATION
   ENDMETHOD.
 
   METHOD save.
-  if lhc_products=>lv_id is NOT INITIAL.
-   DATA(lv_url) = ycl_utility=>c_nosql_url && lhc_products=>lv_id .
 
+*// Data Good to be updated
+    IF lhc_products=>lv_id IS NOT INITIAL.
 
-    TRY.
-        DATA(lo_client) = ycl_utility=>create_client( url = lv_url  ).
+      DATA(lv_url) = ycl_utility=>c_nosql_url && lhc_products=>lv_id .
 
-        DATA(lo_request) = lo_client->get_http_request( ).
+      TRY.
+          DATA(lo_client) = ycl_utility=>create_client( url = lv_url  ).
 
-        lo_request->set_text( i_text   = lhc_products=>lv_json ).
-        lo_request->set_header_field(
-            i_name  = 'Content-Type'
-            i_value = 'application/json'
-        ).
+          DATA(lo_request) = lo_client->get_http_request( ).
 
-           DATA(lo_response) = lo_client->execute( if_web_http_client=>put ).
+          lo_request->set_text( i_text   = lhc_products=>lv_json ).
+          lo_request->set_header_field(
+              i_name  = 'Content-Type'
+              i_value = 'application/json').
 
-      CATCH cx_web_message_error.
-      CATCH cx_static_check.
+*// Execute put Request
+          lo_client->execute( if_web_http_client=>put ).
+
+        CATCH cx_web_message_error.
+        CATCH cx_static_check.
       ENDTRY.
-  ENDIF.
+    ENDIF.
   ENDMETHOD.
 
   METHOD cleanup.
+*// NO IMPLEMENTATION
   ENDMETHOD.
 
   METHOD cleanup_finalize.
+*// NO IMPLEMENTATION
   ENDMETHOD.
 
 ENDCLASS.
