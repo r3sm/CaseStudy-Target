@@ -1,0 +1,743 @@
+{
+	"info": {
+		"_postman_id": "404d6ae1-c61c-4241-870b-69806f139190",
+		"name": "Target Case Study",
+		"description": "Target Case Study related APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SAP - Product Service",
+			"item": [
+				{
+					"name": "Unit Test",
+					"item": [
+						{
+							"name": "Success",
+							"item": [
+								{
+									"name": "Get Product - valid id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/sap/opu/odata4/sap/y_sb_products_v4_web_api/srvd_a2x/sap/y_sd_productdetails/0001//products(13860428)",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"sap",
+												"opu",
+												"odata4",
+												"sap",
+												"y_sb_products_v4_web_api",
+												"srvd_a2x",
+												"sap",
+												"y_sd_productdetails",
+												"0001",
+												"",
+												"products(13860428)"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update Product Price - valid id",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"console.log('Pre-request Script from Request start');\r",
+													"\r",
+													"// We don't need to do anything if it's GET or x-csrf-token header is explicitly presented\r",
+													"if (pm.request.method !== 'GET' && !(pm.request.headers.has('x-csrf-token'))) {\r",
+													"\r",
+													"  var csrfRequest = pm.request.clone();\r",
+													"  csrfRequest.method = 'GET';\r",
+													"    csrfRequest.url = pm.environment.get('base_url') + '/sap/opu/odata4/sap/y_sb_products_v4_web_api/srvd_a2x/sap/y_sd_productdetails/0001' ;\r",
+													"\r",
+													"\r",
+													"  csrfRequest.upsertHeader({\r",
+													"    key: 'x-csrf-token',\r",
+													"    value: 'fetch'\r",
+													"  });\r",
+													"\r",
+													"  pm.sendRequest(csrfRequest, function(err, res) {\r",
+													"    console.log('pm.sendRequest start');\r",
+													"    if (err) {\r",
+													"      console.log(err);\r",
+													"    } else {\r",
+													"      var csrfToken = res.headers.get('x-csrf-token');\r",
+													"      if (csrfToken) {\r",
+													"        console.log('csrfToken fetched:' + csrfToken);\r",
+													"        pm.request.headers.upsert({\r",
+													"          key: 'x-csrf-token',\r",
+													"          value: csrfToken\r",
+													"        });\r",
+													"      } else {\r",
+													"        console.log('No csrf token fetched');\r",
+													"      }\r",
+													"    }\r",
+													"    console.log('pm.sendRequest end');\r",
+													"  });\r",
+													"}\r",
+													"console.log('Pre-request Script from Request ended');"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"value\": 1316.68,\r\n  \"currencyCode\": \"USD\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/sap/opu/odata4/sap/y_sb_products_v4_web_api/srvd_a2x/sap/y_sd_productdetails/0001/products(13860428)",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"sap",
+												"opu",
+												"odata4",
+												"sap",
+												"y_sb_products_v4_web_api",
+												"srvd_a2x",
+												"sap",
+												"y_sd_productdetails",
+												"0001",
+												"products(13860428)"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"description": "Success Scenarios"
+						},
+						{
+							"name": "Failure",
+							"item": [
+								{
+									"name": "Get Product - invalid id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 500\", function () {\r",
+													"  pm.response.to.have.status(500);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/sap/opu/odata4/sap/y_sb_products_v4_web_api/srvd_a2x/sap/y_sd_productdetails/0001/products(123456)",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"sap",
+												"opu",
+												"odata4",
+												"sap",
+												"y_sb_products_v4_web_api",
+												"srvd_a2x",
+												"sap",
+												"y_sd_productdetails",
+												"0001",
+												"products(123456)"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update Product Price - invalid id",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"console.log('Pre-request Script from Request start');\r",
+													"\r",
+													"// We don't need to do anything if it's GET or x-csrf-token header is explicitly presented\r",
+													"if (pm.request.method !== 'GET' && !(pm.request.headers.has('x-csrf-token'))) {\r",
+													"\r",
+													"  var csrfRequest = pm.request.clone();\r",
+													"  csrfRequest.method = 'GET';\r",
+													"    csrfRequest.url = pm.environment.get('base_url') + '/sap/opu/odata4/sap/y_sb_products_v4_web_api/srvd_a2x/sap/y_sd_productdetails/0001' ;\r",
+													"\r",
+													"\r",
+													"  csrfRequest.upsertHeader({\r",
+													"    key: 'x-csrf-token',\r",
+													"    value: 'fetch'\r",
+													"  });\r",
+													"\r",
+													"  pm.sendRequest(csrfRequest, function(err, res) {\r",
+													"    console.log('pm.sendRequest start');\r",
+													"    if (err) {\r",
+													"      console.log(err);\r",
+													"    } else {\r",
+													"      var csrfToken = res.headers.get('x-csrf-token');\r",
+													"      if (csrfToken) {\r",
+													"        console.log('csrfToken fetched:' + csrfToken);\r",
+													"        pm.request.headers.upsert({\r",
+													"          key: 'x-csrf-token',\r",
+													"          value: csrfToken\r",
+													"        });\r",
+													"      } else {\r",
+													"        console.log('No csrf token fetched');\r",
+													"      }\r",
+													"    }\r",
+													"    console.log('pm.sendRequest end');\r",
+													"  });\r",
+													"}\r",
+													"console.log('Pre-request Script from Request ended');"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {\r",
+													"  pm.response.to.have.status(404);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"value\": 1366.68,\r\n  \"currencyCode\": \"USD\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/sap/opu/odata4/sap/y_sb_products_v4_web_api/srvd_a2x/sap/y_sd_productdetails/0001/products(123456)",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"sap",
+												"opu",
+												"odata4",
+												"sap",
+												"y_sb_products_v4_web_api",
+												"srvd_a2x",
+												"sap",
+												"y_sd_productdetails",
+												"0001",
+												"products(123456)"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Product - without  id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 500\", function () {\r",
+													"  pm.response.to.have.status(500);\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/sap/opu/odata4/sap/y_sb_products_v4_web_api/srvd_a2x/sap/y_sd_productdetails/0001/products",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"sap",
+												"opu",
+												"odata4",
+												"sap",
+												"y_sb_products_v4_web_api",
+												"srvd_a2x",
+												"sap",
+												"y_sd_productdetails",
+												"0001",
+												"products"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					],
+					"description": "All Unit Test Scenarios",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Contract",
+					"item": [
+						{
+							"name": "Service Document",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"  pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/sap/opu/odata4/sap/y_sb_products_v4_web_api/srvd_a2x/sap/y_sd_productdetails/0001/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"sap",
+										"opu",
+										"odata4",
+										"sap",
+										"y_sb_products_v4_web_api",
+										"srvd_a2x",
+										"sap",
+										"y_sd_productdetails",
+										"0001",
+										""
+									]
+								},
+								"description": "Service Document of the SAP Product Service.\n\nCheck the Collections/ Entity Sets available in this service"
+							},
+							"response": []
+						},
+						{
+							"name": "Metadata Document",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"  pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/sap/opu/odata4/sap/y_sb_products_v4_web_api/srvd_a2x/sap/y_sd_productdetails/0001/$metadata",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"sap",
+										"opu",
+										"odata4",
+										"sap",
+										"y_sb_products_v4_web_api",
+										"srvd_a2x",
+										"sap",
+										"y_sd_productdetails",
+										"0001",
+										"$metadata"
+									]
+								},
+								"description": "Metadata Document Document of the SAP Product Service.\n\n"
+							},
+							"response": []
+						}
+					],
+					"description": "Contract of the SAP Product Service API"
+				}
+			],
+			"description": "SAP Products Service  API built in SAP ABAP Trial Access",
+			"auth": {
+				"type": "oauth2",
+				"oauth2": [
+					{
+						"key": "tokenName",
+						"value": "myToken",
+						"type": "string"
+					},
+					{
+						"key": "accessTokenUrl",
+						"value": "{{auth_url}}oauth/token?",
+						"type": "string"
+					},
+					{
+						"key": "password",
+						"value": "{{Password}}",
+						"type": "string"
+					},
+					{
+						"key": "username",
+						"value": "{{username}}",
+						"type": "string"
+					},
+					{
+						"key": "clientSecret",
+						"value": "{{Client_secret}}",
+						"type": "string"
+					},
+					{
+						"key": "clientId",
+						"value": "{{Client_id}}",
+						"type": "string"
+					},
+					{
+						"key": "challengeAlgorithm",
+						"value": "S256",
+						"type": "string"
+					},
+					{
+						"key": "useBrowser",
+						"value": true,
+						"type": "boolean"
+					},
+					{
+						"key": "redirect_uri",
+						"value": "https://b89f3d6f-189f-4d97-aae5-d589fa4eb266.abap-web.us10.hana.ondemand.com",
+						"type": "string"
+					},
+					{
+						"key": "grant_type",
+						"value": "password_credentials",
+						"type": "string"
+					},
+					{
+						"key": "authUrl",
+						"value": "https://1f8cf486trial.authentication.us10.hana.ondemand.com",
+						"type": "string"
+					},
+					{
+						"key": "addTokenTo",
+						"value": "header",
+						"type": "string"
+					},
+					{
+						"key": "client_authentication",
+						"value": "header",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "External Services",
+			"item": [
+				{
+					"name": "Target",
+					"item": [
+						{
+							"name": "Get Product Info",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"  pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://redsky.target.com/v3/pdp/tcin/{{VALID_ID}}?excludes=available_to_promise_network,taxonomy,price,promotion,bulk_ship,rating_and_review_reviews,rating_and_review_statistics,question_answer_statistics&key=candidate ",
+									"protocol": "https",
+									"host": [
+										"redsky",
+										"target",
+										"com"
+									],
+									"path": [
+										"v3",
+										"pdp",
+										"tcin",
+										"{{VALID_ID}}"
+									],
+									"query": [
+										{
+											"key": "excludes",
+											"value": "available_to_promise_network,taxonomy,price,promotion,bulk_ship,rating_and_review_reviews,rating_and_review_statistics,question_answer_statistics"
+										},
+										{
+											"key": "key",
+											"value": "candidate "
+										}
+									]
+								},
+								"description": "Get Product description"
+							},
+							"response": []
+						}
+					],
+					"description": "Target as Service Provider"
+				},
+				{
+					"name": "Bonsai",
+					"item": [
+						{
+							"name": "Get Price",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"  pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://smgjycre7c:k9l3guowbp@product-price-4294755319.us-east-1.bonsaisearch.net:443/currentvalue/productid/13860428",
+									"protocol": "https",
+									"auth": {
+										"user": "smgjycre7c",
+										"password": "k9l3guowbp"
+									},
+									"host": [
+										"product-price-4294755319",
+										"us-east-1",
+										"bonsaisearch",
+										"net"
+									],
+									"port": "443",
+									"path": [
+										"currentvalue",
+										"productid",
+										"13860428"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Price",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"  pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n\"productValue\":91.14,\r\n\"currencyCode\":\"USD\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://smgjycre7c:k9l3guowbp@product-price-4294755319.us-east-1.bonsaisearch.net:443/currentvalue/productid/{{ID}}",
+									"protocol": "https",
+									"auth": {
+										"user": "smgjycre7c",
+										"password": "k9l3guowbp"
+									},
+									"host": [
+										"product-price-4294755319",
+										"us-east-1",
+										"bonsaisearch",
+										"net"
+									],
+									"port": "443",
+									"path": [
+										"currentvalue",
+										"productid",
+										"{{ID}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "NOsql db used by https://bonsai.io/"
+				}
+			],
+			"description": "External Service Calls made from SAP",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "CIN1",
+			"value": "13860428"
+		},
+		{
+			"key": "CIN2",
+			"value": "54456119"
+		},
+		{
+			"key": "CIN3",
+			"value": "13264003"
+		},
+		{
+			"key": "CIN4",
+			"value": "12954218"
+		}
+	]
+}
